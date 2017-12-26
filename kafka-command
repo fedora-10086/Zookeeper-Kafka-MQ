@@ -1,0 +1,26 @@
+注：启动时：先启动 zookeeper，后启动 kafka；关闭时：先关闭 kafka，后关闭zookeeper
+
+先启动zookeeper
+bin/zkServer.sh start
+
+启动kafka:
+bin/kafka-server-start.sh -daemon config/server.properties
+
+查看：jps
+
+创建topic
+ bin/kafka-topics.sh --create --zookeeper 192.168.1.91:2181 --replication-factor 1 --partitions 1 --topic test
+
+查看topic
+bin/kafka-topics.sh --list --zookeeper 192.168.1.92:2181
+
+创建发布：
+bin/kafka-console-producer.sh --broker-list 192.168.1.91:9092 --topic test
+
+创建消费：
+bin/kafka-console-consumer.sh --bootstrap-server 192.168.1.92:9092 --topic test --from-beginning
+
+退出发布：ctrl+d
+
+删除发布topic：
+bin/kafka-topics.sh --delete --zookeeper master:2181,worker1:2181,worker2:2181 --topic test
