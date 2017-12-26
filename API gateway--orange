@@ -1,0 +1,130 @@
+1、安装openresty
+
+1.1、安装依赖库
+
+yum install readline-devel pcre-devel openssl-devel gcc
+
+
+1.2、下载并安装openresty
+
+wget https://openresty.org/download/openresty-1.9.15.1.tar.gz
+
+tar xvf openresty-1.9.15.1.tar.gz
+
+cd openresty-1.9.15.1
+
+./configure --with-luajit  --with-http_stub_status_module
+
+ make 
+
+ make install
+
+
+1.3 把openresty命令添加到/usr/sbin
+
+ln -s /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx
+
+ln -s /usr/local/openresty/bin/resty /usr/sbin/resty
+
+
+1.4 安装lor
+
+git clone https://github.com/sumory/lor.git
+
+cd lor
+
+sh install.sh
+
+lor的github地址：https://github.com/sumory/lor
+
+
+1.5、安装libuuid.so
+
+centos用户可通过命令yum install libuuid-devel安装，其它情况请自行google
+
+
+1.6、安装orange
+
+git clone https://github.com/sumory/orange.git
+
+cd orange
+
+make install
+
+然后在终端输入orange --help，就会出现orange的命令了。
+
+orange会默认安装在/usr/local/orange
+
+然后把/orange/install中对应版本的表导入数据库
+
+create database orange default charset utf8 collate utf8_general_ci;
+
+mysql -u root -p orange < orange-v0.6.0.sql
+
+其中需要配置/orange/conf中的nginx.conf和orange.conf
+
+其中orange.conf配置如下：
+
+    {  
+        "plugins": [    //需要包含的插件  
+            "stat",  
+            "monitor",  
+            "redirect",  
+            "rewrite",  
+            "rate_limiting",  
+            "basic_auth",  
+            "key_auth",  
+            "waf",  
+            "divide",  
+            "kvstore"  
+        ],  
+        "store": "mysql", //数据存储的格式，0.5版本以后就只有mysql可以选择了  
+        "store_mysql": {  //配置mysql数据库  
+            "timeout": 5000,  
+            "connect_config": {  
+                "host": "127.0.0.1",  
+                "port": 3306,  
+                "database": "orange",  
+                "user": "root",  
+                "password": "",  
+                "max_packet_size": 1048576  
+            },  
+            "pool_config": {  
+                "max_idle_timeout": 10000,  
+                "pool_size": 3  
+            },  
+            "desc": "mysql configuration"  
+        },  
+        "dashboard": {  //配置dashboard页面，这个页面是让用户来进行orange操作的，其中auth为true的时候，需要登录验证，否则不用  
+            "auth": false,  
+            "session_secret": "y0ji4pdj61aaf3f11c2e65cd2263d3e7e5",  
+            "whitelist": [  
+                "^/auth/login$",  
+                "^/error/$"  
+            ]  
+        },  
+        "api": { //配置orange的API接口  
+            "auth_enable": true,  
+            "credentials": [  
+                {  
+                    "username":"api_username",  
+                    "password":"api_password"  
+                }  
+            ]  
+        }  
+    }  
+
+
+#修改conf/nginx.conf里的一些配置，如
+# `resolver`，用于DNS解析
+# 各日志目录等
+# 各lua_shared_dict的大小
+# 端口为9999的`server`, 这个server用于Orange的管理，请确保对该端口的访问授权，如只支持内网访问
+
+#修改好orange.conf和conf/nginx.conf后，启动即可
+默认用户名和密码：
+admin      orange_admin
+
+/usr/local/bin/orange start
+cp /usr/local/bin/orange /etc/init.d/
+/etc/init.d/orange restart
