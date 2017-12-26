@@ -1,0 +1,39 @@
+安全配置
+
+1、控制台安全配置，打开conf/jetty.xml文件，找到
+
+    <bean id="securityConstraint" class="org.eclipse.jetty.http.security.Constraint">
+
+        <property name="name" value="BASIC" />
+
+        <property name="roles" value="admin" />
+
+        <property name="authenticate" value="false" />
+
+    </bean>
+
+   将“false”改为“true”即可。用户名和密码存放在conf/jetty-realm.properties文件中。
+
+2、生产者和消费者连接MQ需要密码
+
+   打开conf/activemq.xml文件，在<broker>标签里的<systemUsage>标签前加入：
+
+   <plugins>  
+
+<simpleAuthenticationPlugin>  
+
+<users>  
+
+<authenticationUser username="${activemq.username}" password="${activemq.password}" groups="users,admins"/>  
+
+</users>  
+
+</simpleAuthenticationPlugin>  
+
+   </plugins>
+
+ 注意必须在<systemUsage>标签前，否则启动ActiveMQ会报错。
+
+ 
+
+用户名和密码存放在conf/credentials.properties文件中
